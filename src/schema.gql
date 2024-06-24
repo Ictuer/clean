@@ -1,0 +1,66 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+input CreateOrderInput {
+  orderProduct: [OrderProductInput!]!
+  userId: String!
+}
+
+input CreateProductInput {
+  price: Int!
+  title: String!
+}
+
+input CreateUserInput {
+  name: String!
+}
+
+type Mutation {
+  createOrder(payload: CreateOrderInput!): Order!
+  createProduct(payload: CreateProductInput!): Product!
+  createUser(payload: CreateUserInput!): User!
+}
+
+type Order {
+  id: String!
+  orderProduct: [OrderProduct!]!
+  paymentId: String
+  paymentMethod: String
+  status: String!
+  total: Int!
+  userId: String!
+}
+
+type OrderProduct {
+  id: String!
+  orderId: String!
+  price: Int!
+  product: String!
+}
+
+input OrderProductInput {
+  price: Int!
+  productId: String!
+}
+
+type Product {
+  id: String!
+  price: Int!
+  title: String!
+}
+
+type Query {
+  order(id: String!): Order!
+  orders: [Order!]!
+  product(id: String!): Product!
+  products: [Product!]!
+  user(id: String!): User!
+  users: [User!]!
+}
+
+type User {
+  id: String!
+  name: String!
+  orders: [Order!]!
+}

@@ -1,0 +1,152 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum OrderStatus {
+  open     @map("open")
+  paid     @map("paid")
+  canceled @map("canceled")
+}
+
+enum PaymentMethod {
+  stripe @map("stripe")
+  paddle @map("paddle")
+  paypal @map("paypal")
+  other  @map("other")
+}
+
+model Product {
+  id     String         @id @default(uuid())
+  title  String
+  price  Int            @default(0)
+  orders OrderProduct[]
+
+  @@map("product")
+}
+
+model User {
+  id   String @id @default(uuid())
+  name String
+
+  orders Order[]
+
+  @@map("user")
+}
+
+model Order {
+  id            String         @id @default(uuid())
+  userId        String
+  status        OrderStatus    @default(open)
+  paymentMethod PaymentMethod?
+  paymentId     String?
+  total         Int
+
+  user         User           @relation(fields: [userId], references: [id])
+  orderProduct OrderProduct[]
+
+  @@map("order")
+}
+
+model OrderProduct {
+  id        String @id @default(uuid())
+  productId String
+  orderId   String @map("orderId")
+  price     Int
+
+  order   Order    @relation(fields: [orderId], references: [id])
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@map("order_product")
+}
+
+model Route {
+  id   String     @id @default(uuid())
+  legs RouteLeg[]
+
+  @@map("route")
+}
+
+model RouteLeg {
+  id String @id @default(uuid())
+
+  route Route @relation(fields: [routeId], references: [id])
+  leg   Leg   @relation(fields: [legId], references: [id])
+
+  routeId String
+  legId   String
+
+  @@map("route_leg")
+}
+
+model Leg {
+  id String @id @default(uuid())
+
+  locationName String
+
+  origin      Json
+  destination Json
+  schedule    Int // In Minutes
+  routes      RouteLeg[]
+
+  @@map("leg")
+}
+
+model Location {
+  name String @unique
+  lat  Int
+  lng  Int
+
+  @@map("location")
+}
+
+model TrackingEvent {
+  id           String            @id @default(uuid())
+  location     Json
+  eventType    TrackingEventType
+  trackingTime DateTime
+
+  @@map("tracking_event")
+}
+
+enum TrackingEventType {
+  load    @map("load")
+  unload  @map("unload")
+  deliver @map("deliver")
+}
+
+model Shipment {
+  id             String         @id @default(uuid())
+  orderId        String         @default(uuid()) @map("order_id")
+  origin         String
+  destination    String
+  route          Json // [Leg]
+  currentLeg     Int //
+  cost           Int
+  transportation Transportation
+  status         ShipmentStatus
+  startDate      DateTime
+  expectedDate   DateTime
+  endDate        DateTime
+
+  @@map("shipment")
+}
+
+enum Transportation {
+  car   @map("car")
+  train @map("train")
+  plane @map("plane")
+  ship  @map("ship")
+}
+
+enum ShipmentStatus {
+  pending   @map("pending")
+  inTransit @map("intransit")
+  delivered @map("delivered")
+  failed    @map("failed")
+  lost      @map("lost")
+}
